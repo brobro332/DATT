@@ -12,7 +12,8 @@ public enum ErrorCode {
     ENTITY_NOT_FOUND(HttpStatus.BAD_REQUEST, "E003", "엔티티를 찾을 수 없습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "E004", "서버 에러입니다."),
     INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, "E005", "잘못된 타입 값입니다."),
-    HANDLE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "E006", "접근이 거부되었습니다.");
+    HANDLE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "E006", "접근이 거부되었습니다."),
+    BATCH_RUN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "E007", "배치 실행 에러입니다.");
 
     private final HttpStatus status;
     private final String code;
