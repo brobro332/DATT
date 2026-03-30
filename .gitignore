@@ -27,6 +27,7 @@ out/
 !**/src/test/**/out/
 .env
 /postgres_data/
+/sql/
 
 ### NetBeans ###
 /nbproject/private/
