@@ -38,6 +38,7 @@ public class PlaceService {
         List<SearchTask> tasks = new ArrayList<>();
         for (Platform p : platforms) {
             for (String c : categories) {
+                if (p == Platform.GOOGLE && c.equals("숙소")) continue;
                 tasks.add(new SearchTask(p, c));
             }
         }
@@ -61,9 +62,10 @@ public class PlaceService {
             Optional<KeywordHistory> history =
                 historyRepository.findByKeywordAndCategoryAndPlatform(keyword, task.category(), task.platform());
 
-            if (isDataFresh(history, task.category())) {
-            return placeRepository.findByKeywordAndCategoryAndPlatform(keyword, task.category(), task.platform())
-                .stream().map(placeMapper::toResponseDto).collect(Collectors.toList());
+            if (isDataFresh(history, task.category(), task.platform())) {
+                log.info("캐시 적중 [{} - {}]", task.platform(), task.category());
+                return placeRepository.findByKeywordAndCategoryAndPlatform(keyword, task.category(), task.platform())
+                    .stream().map(placeMapper::toResponseDto).collect(Collectors.toList());
             }
 
             try { Thread.sleep(delay); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
@@ -118,11 +120,17 @@ public class PlaceService {
             .block();
     }
 
-    private boolean isDataFresh(Optional<KeywordHistory> history, String category) {
+    private boolean isDataFresh(Optional<KeywordHistory> history, String category, Platform platform) {
         if (history.isEmpty()) return false;
 
         long daysPassed = ChronoUnit.DAYS.between(history.get().getLastScrapedAt(), LocalDateTime.now());
-        int threshold = category.equals("숙소") ? 7 : 3;
+
+        int threshold;
+        if (category.equals("숙소")) {
+            threshold = 7;
+        } else {
+            threshold = 3;
+        }
 
         return daysPassed < threshold;
     }
