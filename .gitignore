@@ -28,6 +28,7 @@ out/
 .env
 **/postgres_data/
 /sql/
+**/generated/**
 
 ### NetBeans ###
 /nbproject/private/
