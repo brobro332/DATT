@@ -42,6 +42,12 @@ public class PlaceService {
 
         List<PlaceResponseDto> allResults = getPlacesFromAllSources(keyword);
 
+        if (category != null && !category.isEmpty() && !category.equals("전체")) {
+            allResults = allResults.stream()
+                .filter(p -> category.equals(p.getCategory()))
+                .collect(Collectors.toList());
+        }
+
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), allResults.size());
 
@@ -88,7 +94,7 @@ public class PlaceService {
             .collect(Collectors.toList());
     }
 
-    private CompletableFuture<List<PlaceResponseDto>> processTask(String keyword, SearchTask task, long delay) {
+    public CompletableFuture<List<PlaceResponseDto>> processTask(String keyword, SearchTask task, long delay) {
         return CompletableFuture.supplyAsync(() -> {
             Optional<KeywordHistory> history =
                 historyRepository.findByKeywordAndCategoryAndPlatform(keyword, task.category(), task.platform());
