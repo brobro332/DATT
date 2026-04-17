@@ -11,8 +11,9 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PlaceResponseDto {
     private String name;
-    private String category;
+    @Setter private String category;
     private String address;
+    private Double rating;
     private Integer visitorReviewCount;
     private List<String> imageUrls;
     private String placeUrl;

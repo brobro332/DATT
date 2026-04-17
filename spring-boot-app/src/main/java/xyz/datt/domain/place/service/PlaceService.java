@@ -2,6 +2,7 @@ package xyz.datt.domain.place.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -12,6 +13,7 @@ import xyz.datt.domain.place.entity.Place;
 import xyz.datt.domain.place.entity.Platform;
 import xyz.datt.domain.place.mapper.PlaceMapper;
 import xyz.datt.domain.place.repository.KeywordHistoryRepository;
+import xyz.datt.domain.place.repository.PlaceQueryRepository;
 import xyz.datt.domain.place.repository.PlaceRepository;
 
 import java.time.Duration;
@@ -28,8 +30,28 @@ public class PlaceService {
 
     private final KeywordHistoryRepository historyRepository;
     private final PlaceRepository placeRepository;
+    private final PlaceQueryRepository placeQueryRepository;
     private final PlaceMapper placeMapper;
     private final WebClient agentWebClient;
+
+    public Page<PlaceResponseDto> getPlacesPage(String keyword, String category, Platform platform, Pageable pageable) {
+        if (keyword == null || keyword.isBlank()) {
+            return placeQueryRepository.searchPlaces(null, category, platform, pageable)
+                .map(placeMapper::toResponseDto);
+        }
+
+        List<PlaceResponseDto> allResults = getPlacesFromAllSources(keyword);
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), allResults.size());
+
+        List<PlaceResponseDto> content = Collections.emptyList();
+        if (start < allResults.size()) {
+            content = allResults.subList(start, end);
+        }
+
+        return new PageImpl<>(content, pageable, allResults.size());
+    }
 
     public List<PlaceResponseDto> getPlacesFromAllSources(String keyword) {
         List<String> categories = Arrays.asList("맛집", "카페", "숙소", "술집");
@@ -52,9 +74,18 @@ public class PlaceService {
         }
 
         return futures.stream()
-                .map(CompletableFuture::join)
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
+            .map(CompletableFuture::join)
+            .flatMap(List::stream)
+            .collect(Collectors.toMap(
+                PlaceResponseDto::getPlaceUrl,
+                dto -> dto,
+                (existing, replacement) -> existing
+            ))
+            .values()
+            .stream()
+            .sorted(Comparator.comparing(PlaceResponseDto::getVisitorReviewCount,
+                Comparator.nullsLast(Comparator.reverseOrder())))
+            .collect(Collectors.toList());
     }
 
     private CompletableFuture<List<PlaceResponseDto>> processTask(String keyword, SearchTask task, long delay) {
@@ -64,13 +95,18 @@ public class PlaceService {
 
             if (isDataFresh(history, task.category(), task.platform())) {
                 log.info("캐시 적중 [{} - {}]", task.platform(), task.category());
-                return placeRepository.findByKeywordAndCategoryAndPlatform(keyword, task.category(), task.platform())
-                    .stream().map(placeMapper::toResponseDto).collect(Collectors.toList());
+
+                return placeQueryRepository.searchPlaces(keyword, task.category(), task.platform(), Pageable.unpaged())
+                    .stream()
+                    .map(placeMapper::toResponseDto)
+                    .collect(Collectors.toList());
             }
 
             try { Thread.sleep(delay); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
 
             List<PlaceResponseDto> scrapedData = callAgent(keyword, task.category(), task.platform());
+            scrapedData.forEach(dto -> dto.setCategory(task.category()));
+
             saveData(keyword, task, scrapedData, history);
 
             return scrapedData;
@@ -78,31 +114,34 @@ public class PlaceService {
     }
 
     @Transactional
-    protected void saveData(String keyword, SearchTask task, List<PlaceResponseDto> scrapedData, Optional<KeywordHistory> history) {
-        if (scrapedData == null || scrapedData.isEmpty()) {
-            log.warn("에이전트로부터 받은 데이터가 없습니다. 저장 생략 [{}]", task);
-            return;
+    protected synchronized void saveData(String keyword, SearchTask task, List<PlaceResponseDto> scrapedData, Optional<KeywordHistory> history) {
+        if (scrapedData == null || scrapedData.isEmpty()) return;
+
+        List<String> targetUrls = scrapedData.stream()
+            .map(PlaceResponseDto::getPlaceUrl)
+            .collect(Collectors.toList());
+
+        Map<String, Place> existingPlaceMap = placeRepository.findByPlaceUrlIn(targetUrls)
+            .stream()
+            .collect(Collectors.toMap(Place::getPlaceUrl, p -> p, (oldValue, newValue) -> oldValue));
+
+        List<Place> toSave = new ArrayList<>();
+
+        for (PlaceResponseDto dto : scrapedData) {
+            if (existingPlaceMap.containsKey(dto.getPlaceUrl())) {
+                Place existingPlace = existingPlaceMap.get(dto.getPlaceUrl());
+                existingPlace.updateInfo(dto.getName(), dto.getVisitorReviewCount(), dto.getImageUrls(), dto.getRating());
+                toSave.add(existingPlace);
+            } else {
+                toSave.add(placeMapper.toEntity(dto, keyword, task.category(), task.platform()));
+            }
         }
 
-        try {
-            placeRepository.deleteOldData(keyword, task.category(), task.platform());
-            placeRepository.flush();
+        placeRepository.saveAll(toSave);
 
-            List<Place> entities = scrapedData.stream()
-                    .map(dto -> placeMapper.toEntity(dto, keyword, task.category(), task.platform()))
-                    .collect(Collectors.toList());
-
-            placeRepository.saveAll(entities);
-            placeRepository.flush();
-
-            KeywordHistory h = history.orElseGet(() -> new KeywordHistory(keyword, task.category(), task.platform()));
-            h.updateTimestamp();
-            historyRepository.save(h);
-
-            log.info("성공적으로 저장됨 [{}건 ({} - {})]", entities.size(), task.platform(), task.category());
-        } catch (Exception e) {
-            log.error("데이터 저장 중 오류 발생 [{}]", e.getMessage(), e);
-        }
+        KeywordHistory h = history.orElseGet(() -> new KeywordHistory(keyword, task.category(), task.platform()));
+        h.updateTimestamp();
+        historyRepository.save(h);
     }
 
     private List<PlaceResponseDto> callAgent(String keyword, String category, Platform platform) {
@@ -122,16 +161,8 @@ public class PlaceService {
 
     private boolean isDataFresh(Optional<KeywordHistory> history, String category, Platform platform) {
         if (history.isEmpty()) return false;
-
         long daysPassed = ChronoUnit.DAYS.between(history.get().getLastScrapedAt(), LocalDateTime.now());
-
-        int threshold;
-        if (category.equals("숙소")) {
-            threshold = 7;
-        } else {
-            threshold = 3;
-        }
-
+        int threshold = category.equals("숙소") ? 7 : 3;
         return daysPassed < threshold;
     }
 }

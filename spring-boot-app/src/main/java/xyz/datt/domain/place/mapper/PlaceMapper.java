@@ -22,11 +22,13 @@ public interface PlaceMapper {
     @Mapping(target = "reviewCount", source = "dto.visitorReviewCount")
     @Mapping(target = "imageUrls", expression = "java(joinImages(dto.getImageUrls()))")
     @Mapping(target = "placeUrl", source = "dto.placeUrl")
+    @Mapping(target = "rating", source = "dto.rating")
     Place toEntity(PlaceResponseDto dto, String keyword, String category, Platform platform);
 
     @Mapping(target = "imageUrls", expression = "java(splitImages(entity.getImageUrls()))")
     @Mapping(target = "visitorReviewCount", source = "reviewCount")
     @Mapping(target = "source", expression = "java(entity.getPlatform().getCode())")
+    @Mapping(target = "rating", source = "entity.rating")
     PlaceResponseDto toResponseDto(Place entity);
 
     default String joinImages(List<String> imageUrls) {
