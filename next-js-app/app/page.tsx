@@ -55,7 +55,7 @@ export default function Home() {
 
     setAnchorLoading(true);
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/anchors?keyword=${encodeURIComponent(keyword || '전체')}`, { method: 'POST' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/anchors?keyword=${encodeURIComponent(keyword || '전체')}`, { method: 'POST' });
       const result = await res.json();
       if (result.success) {
         setAnchorData(result.data);

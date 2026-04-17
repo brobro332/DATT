@@ -23,7 +23,7 @@ export function useSearch(keyword: string, activeTab: string, activeCategory: st
       const currentPage = isNew ? 0 : page;
       const categoryParam = activeCategory === '전체' ? '' : activeCategory;
       const res = await fetch(
-        `http://localhost:8080/api/v1/places?keyword=${encodeURIComponent(keyword || '')}&category=${encodeURIComponent(categoryParam)}&platform=${activeTab}&sortBy=${sortBy}&page=${currentPage}&size=20`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/places?keyword=${encodeURIComponent(keyword || '')}&category=${encodeURIComponent(categoryParam)}&platform=${activeTab}&sortBy=${sortBy}&page=${currentPage}&size=20`
       );
       const result = await res.json();
       
