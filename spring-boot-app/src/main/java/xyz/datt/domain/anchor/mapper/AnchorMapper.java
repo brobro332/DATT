@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 import xyz.datt.domain.anchor.dto.AnchorResponseDto;
@@ -15,6 +16,9 @@ import java.util.Map;
 
 @Mapper(componentModel = "spring")
 public abstract class AnchorMapper {
+    @Value("${domain.frontend}")
+    private String frontendDomain;
+
     @Autowired
     protected ObjectMapper objectMapper;
 
@@ -25,7 +29,7 @@ public abstract class AnchorMapper {
 
     @Named("idToShareUrl")
     protected String idToShareUrl(String id) {
-        return "http://localhost:3000/share/" + id;
+        return frontendDomain + "/share/" + id;
     }
 
     @Named("jsonToContent")

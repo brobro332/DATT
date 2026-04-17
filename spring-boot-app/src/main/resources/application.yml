@@ -22,7 +22,12 @@ spring:
       enabled: false
 
   data:
-    service-key: {DATA_SERVICE_KEY}
-    path: {DATA_PATH}
-    div-id: {DATA_DIV_ID}
-    key: {DATA_KEY}
+    service-key: ${DATA_SERVICE_KEY}
+    path: ${DATA_PATH}
+    div-id: ${DATA_DIV_ID}
+    key: ${DATA_KEY}
+
+domain:
+  backend: ${DOMAIN_BACKEND}
+  frontend: ${DOMAIN_FRONTEND}
+  agent: ${DOMAIN_AGENT}

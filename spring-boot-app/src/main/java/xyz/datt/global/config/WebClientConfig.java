@@ -1,11 +1,15 @@
 package xyz.datt.global.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class WebClientConfig {
+    @Value("${domain.agent}")
+    private String agentDomain;
+
     @Bean
     public WebClient dataGoWebClient() {
         return WebClient.builder()
@@ -20,7 +24,7 @@ public class WebClientConfig {
     @Bean
     public WebClient agentWebClient() {
         return WebClient.builder()
-            .baseUrl("http://localhost:8000")
+            .baseUrl(agentDomain)
             .build();
     }
 }
