@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: datt-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: datt
+    ports:
+      - "${DB_PORT_IN}:5432"
+    volumes:
+      - ${DB_VOLUMES}

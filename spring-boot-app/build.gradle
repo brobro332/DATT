@@ -1,0 +1,69 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.0.3'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'xyz'
+version = '0.0.1-SNAPSHOT'
+description = 'The easiest way to find your perfect anchorage, DATT.'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'io.github.openfeign.querydsl:querydsl-jpa:6.10.1'
+	annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:6.10.1:jakarta'
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    testImplementation 'org.springframework.batch:spring-batch-test'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+	implementation 'org.mapstruct:mapstruct:1.6.3'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+	implementation 'io.github.cdimascio:dotenv-java:2.2.4'
+	runtimeOnly 'org.postgresql:postgresql'
+	implementation 'org.hibernate.orm:hibernate-spatial'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+}
+
+def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile
+
+sourceSets {
+	main.java.srcDirs += [ querydslDir ]
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.getGeneratedSourceOutputDirectory().set(querydslDir)
+}
+
+clean {
+	delete querydslDir
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
