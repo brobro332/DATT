@@ -18,7 +18,7 @@ export default function Home() {
   const [anchorData, setAnchorData] = useState(null);
   const [isAnchorModalOpen, setIsAnchorModalOpen] = useState(false);
 
-  const { results, loading, fetchingNext, hasNext, setPage } = 
+  const { results, totalElements, loading, fetchingNext, hasNext, setPage } = 
     useSearch(keyword, activeTab, activeCategory, 'REVIEW');
 
   const isAnchorDisabled = useMemo(() => {
@@ -119,30 +119,84 @@ export default function Home() {
       </header>
 
       <main className="max-w-2xl mx-auto px-6 py-8">
-        <div className="flex gap-2 overflow-x-auto no-scrollbar mb-8">
-          {categories.map(cat => (
-            <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-6 py-2.5 rounded-full text-xs font-black transition-all whitespace-nowrap ${activeCategory === cat ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg' : 'bg-white dark:bg-slate-900 text-slate-500 border border-slate-200 dark:border-slate-800'}`}>
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        <div className="space-y-5">
-          {results.map((place, i) => (
-            <PlaceCard 
-              key={`${place.name}-${i}`} 
-              place={place} 
-              ref={i === results.length - 1 ? lastElementRef : null} 
-            />
-          ))}
-          
-          {(loading || fetchingNext) && (
-            <div className="py-12 flex justify-center">
-              <Loader2 className="animate-spin text-indigo-500" size={32} />
-            </div>
+      {/* 총 건수 표시 추가 */}
+      <div className="flex items-center justify-between mb-4 px-1">
+        <p className="text-sm font-medium text-slate-500">
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <div className="w-16 h-4 bg-slate-200 dark:bg-slate-800 animate-pulse rounded" />
+              데이터를 찾는 중...
+            </span>
+          ) : (
+            <>총 <span className="text-indigo-600 font-bold">{totalElements.toLocaleString()}</span>개의 장소를 찾았습니다</>
           )}
-        </div>
-      </main>
+        </p>
+      </div>
+
+      <div className="flex gap-2 overflow-x-auto no-scrollbar mb-8">
+        {categories.map(cat => (
+          <button 
+            key={cat} 
+            onClick={() => setActiveCategory(cat)} 
+            className={`px-6 py-2.5 rounded-full text-xs font-black transition-all whitespace-nowrap active:scale-95 ${
+              activeCategory === cat 
+                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg' 
+                : 'bg-white dark:bg-slate-900 text-slate-500 border border-slate-200 dark:border-white/5 hover:border-indigo-500/50'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+      
+      <div className="space-y-5">
+        {/* 1. 초기 로딩 시 스켈레톤 5개 출력 */}
+        {loading && results.length === 0 && (
+          <>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="w-full h-32 bg-white dark:bg-slate-900 rounded-2xl animate-pulse border border-slate-100 dark:border-white/5 flex p-4 gap-4">
+                <div className="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+                <div className="flex-1 space-y-3 py-1">
+                  <div className="w-1/3 h-5 bg-slate-200 dark:bg-slate-800 rounded" />
+                  <div className="w-full h-4 bg-slate-100 dark:bg-slate-800/50 rounded" />
+                  <div className="w-2/3 h-4 bg-slate-100 dark:bg-slate-800/50 rounded" />
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+
+        {!loading && results.length === 0 && (
+          <div className="py-20 text-center">
+            <div className="inline-flex p-5 rounded-full bg-slate-100 dark:bg-slate-900 text-slate-400 mb-4">
+              <Search size={32} />
+            </div>
+            <p className="text-slate-500 font-medium">검색 결과가 없습니다.</p>
+            <p className="text-sm text-slate-400 mt-1">다른 키워드로 검색해 보시겠어요?</p>
+          </div>
+        )}
+
+        {/* 2. 실제 결과 리스트 */}
+        {results.map((place, i) => (
+          <PlaceCard 
+            key={`${place.name}-${i}`} 
+            place={place} 
+            ref={i === results.length - 1 ? lastElementRef : null} 
+          />
+        ))}
+        
+        {/* 3. 추가 데이터 페칭(무한 스크롤) 시 하단 스켈레톤 1개 */}
+        {fetchingNext && (
+          <div className="w-full h-32 bg-white dark:bg-slate-900 rounded-2xl animate-pulse border border-slate-100 dark:border-white/5 flex p-4 gap-4">
+            <div className="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div className="flex-1 space-y-3 py-1">
+              <div className="w-1/4 h-5 bg-slate-200 dark:bg-slate-800 rounded" />
+              <div className="w-full h-4 bg-slate-100 dark:bg-slate-800/50 rounded" />
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
 
       {showTopBtn && (
         <button 

@@ -26,6 +26,8 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .env
+.env.local
+.env.production
 **/postgres_data/
 /sql/
 **/generated/**
@@ -41,4 +43,5 @@ out/
 .vscode/
 
 ### FAST API ###
+get_place_by_title_and_category.py
 get_place_by_title_and_category_raw.py

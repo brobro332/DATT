@@ -18,7 +18,7 @@
 - **State Management**: React Hooks (useState, useEffect, useMemo)
 
 ### **Backend**
-- **Framework**: Spring Boot 3.x / Java 17
+- **Framework**: Spring Boot 4.x / Java 17
 - **Database**: PostgreSQL
 - **ORM**: Spring Data JPA / Hibernate Spatial
 - **Architecture**: Domain-Driven Design (DDD) 구조 지향
@@ -35,3 +35,8 @@
 - **Frontend**: 사용자 인터페이스 제공 및 클라이언트 사이드 데이터 인터랙션
 - **Backend**: 비즈니스 로직 처리 및 장소/기록 데이터 관리
 - **Agent**: 실시간 장소 데이터 크롤링 및 데이터 가공/제공
+
+## 💎 인프라 구현
+```
+docker run --rm -it   -v $(pwd)/certbot/conf:/etc/letsencrypt   -v $(pwd)/certbot/www:/var/www/certbot   certbot/certbot certonly   --webroot   --webroot-path=/var/www/certbot   -d your_domain   --email your_email_address   --agree-tos   --no-eff-email   --force-renewal
+```
