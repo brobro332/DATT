@@ -1,4 +1,4 @@
-package xyz.datt.member.entity;
+package xyz.datt.domain.member.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
