@@ -1,7 +1,7 @@
-package xyz.datt.member.repository;
+package xyz.datt.domain.member.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import xyz.datt.member.entity.Member;
+import xyz.datt.domain.member.entity.Member;
 
 import java.util.Optional;
 
