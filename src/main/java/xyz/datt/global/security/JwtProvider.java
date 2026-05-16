@@ -13,12 +13,15 @@ import xyz.datt.global.error.BusinessException;
 import xyz.datt.global.error.ErrorCode;
 
 import javax.crypto.SecretKey;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Component
 @RequiredArgsConstructor
 public class JwtProvider {
     private static final long ACCESS_TOKEN_EXPIRATION_MS = 1000L * 60 * 30;
+    private static final long REFRESH_TOKEN_EXPIRATION_DAYS = 14;
+    private static final long REFRESH_TOKEN_EXPIRATION_MS = 1000L * 60 * 60 * 24 * REFRESH_TOKEN_EXPIRATION_DAYS;
 
     @Value("${jwt.secret}")
     private String secret;
@@ -40,6 +43,24 @@ public class JwtProvider {
             .expiration(expiration)
             .signWith(secretKey)
             .compact();
+    }
+
+    public String createRefreshToken(Long memberId) {
+        Date now = new Date();
+
+        Date expiration = new Date(now.getTime() + REFRESH_TOKEN_EXPIRATION_MS);
+
+        return Jwts.builder()
+            .subject(String.valueOf(memberId))
+            .issuedAt(now)
+            .expiration(expiration)
+            .signWith(secretKey)
+            .compact();
+    }
+
+    public LocalDateTime getRefreshTokenExpiredAt() {
+        return LocalDateTime.now()
+            .plusDays(REFRESH_TOKEN_EXPIRATION_DAYS);
     }
 
     public Long getMemberId(String token) {

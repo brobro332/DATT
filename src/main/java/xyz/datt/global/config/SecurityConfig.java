@@ -25,7 +25,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth ->
                 auth.requestMatchers(
                         "/api/health",
-                        "/api/auth/signup", "/api/auth/login").permitAll()
+                        "/api/auth/signup", "/api/auth/login", "/api/auth/reissue", "/api/auth/logout").permitAll()
                     .anyRequest().authenticated()
             )
             .addFilterBefore(
