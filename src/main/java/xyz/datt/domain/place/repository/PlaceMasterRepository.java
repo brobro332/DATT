@@ -6,7 +6,7 @@ import xyz.datt.domain.place.entity.PlaceMaster;
 import java.util.List;
 import java.util.Optional;
 
-public interface PlaceMasterRepository extends JpaRepository<PlaceMaster, Long> {
+public interface PlaceMasterRepository extends JpaRepository<PlaceMaster, Long>, PlaceQueryRepository {
     boolean existsByBizesId(String bizesId);
     Optional<PlaceMaster> findByBizesId(String bizesId);
     List<PlaceMaster> findByBizesNmContaining(String keyword);
