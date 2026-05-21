@@ -30,11 +30,15 @@ public record PlaceDetailResponse(
     Double lon,
     Double lat,
 
+    Boolean isBookmarked,
+
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
-
-    public static PlaceDetailResponse from(PlaceMaster placeMaster) {
+    public static PlaceDetailResponse from(
+        PlaceMaster placeMaster,
+        boolean isBookmarked
+    ) {
         return new PlaceDetailResponse(
             placeMaster.getId(),
             placeMaster.getBizesId(),
@@ -60,6 +64,8 @@ public record PlaceDetailResponse(
 
             placeMaster.getLon(),
             placeMaster.getLat(),
+
+            isBookmarked,
 
             placeMaster.getCreatedAt(),
             placeMaster.getUpdatedAt()
