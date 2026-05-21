@@ -2,6 +2,7 @@ package xyz.datt.domain.place.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import xyz.datt.domain.bookmark.service.PlaceBookmarkService;
 import xyz.datt.domain.place.dto.PlaceDetailResponse;
 import xyz.datt.domain.place.entity.PlaceMaster;
 import xyz.datt.domain.place.repository.PlaceMasterRepository;
@@ -19,8 +20,11 @@ class PlaceDetailServiceTest {
     private final PlaceMasterRepository placeMasterRepository =
         mock(PlaceMasterRepository.class);
 
+    private final PlaceBookmarkService placeBookmarkService =
+        mock(PlaceBookmarkService.class);
+
     private final PlaceDetailService placeDetailService =
-        new PlaceDetailService(placeMasterRepository);
+        new PlaceDetailService(placeMasterRepository, placeBookmarkService);
 
     @Test
     @DisplayName("장소 ID로 장소 상세 정보를 조회한다.")

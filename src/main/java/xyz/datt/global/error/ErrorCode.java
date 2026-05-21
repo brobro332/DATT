@@ -29,7 +29,9 @@ public enum ErrorCode {
     PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, "place.not_found", "장소를 찾을 수 없습니다."),
     INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "place.invalid_category", "유효하지 않은 카테고리입니다."),
     PLACE_INVALID_SEARCH_CONDITION(HttpStatus.BAD_REQUEST, "place.invalid_search_condition", "장소 검색 조건이 올바르지 않습니다."),
-    PLACE_INVALID_COORDINATE(HttpStatus.BAD_REQUEST, "place.invalid_coordinate", "좌표 값이 올바르지 않습니다.");
+    PLACE_INVALID_COORDINATE(HttpStatus.BAD_REQUEST, "place.invalid_coordinate", "좌표 값이 올바르지 않습니다."),
+    PLACE_BOOKMARK_ALREADY_EXISTS(HttpStatus.CONFLICT, "place_bookmark.already_exists", "이미 저장한 장소입니다."),
+    PLACE_BOOKMARK_NOT_FOUND(HttpStatus.NOT_FOUND, "place_bookmark.not_found", "저장한 장소를 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
