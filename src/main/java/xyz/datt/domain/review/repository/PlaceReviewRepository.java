@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 import xyz.datt.domain.review.dto.PlaceRatingSummary;
 import xyz.datt.domain.review.entity.PlaceReview;
 
+import java.util.List;
+
 public interface PlaceReviewRepository extends JpaRepository<PlaceReview, Long> {
     boolean existsByMemberIdAndPlaceMasterId(Long memberId, Long placeId);
     Page<PlaceReview> findByPlaceMasterIdOrderByCreatedAtDesc(Long placeId, Pageable pageable);
@@ -20,4 +22,7 @@ public interface PlaceReviewRepository extends JpaRepository<PlaceReview, Long> 
         where r.placeMaster.id = :placeId
     """)
     PlaceRatingSummary getRatingSummaryByPlaceId(@Param("placeId") Long placeId);
+
+    long countByMemberId(Long memberId);
+    List<PlaceReview> findTop3ByMemberIdOrderByCreatedAtDesc(Long memberId);
 }

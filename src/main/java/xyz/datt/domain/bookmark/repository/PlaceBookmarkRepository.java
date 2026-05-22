@@ -11,4 +11,5 @@ public interface PlaceBookmarkRepository extends JpaRepository<PlaceBookmark, Lo
     boolean existsByMemberIdAndPlaceMasterId(Long memberId, Long placeId);
     Optional<PlaceBookmark> findByMemberIdAndPlaceMasterId(Long memberId, Long placeId);
     Page<PlaceBookmark> findByMemberIdOrderByCreatedAtDesc(Long memberId, Pageable pageable);
+    long countByMemberId(Long memberId);
 }

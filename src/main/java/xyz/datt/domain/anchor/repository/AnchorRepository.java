@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import xyz.datt.domain.anchor.entity.Anchor;
 
+import java.util.List;
+
 public interface AnchorRepository extends JpaRepository<Anchor, Long> {
     Page<Anchor> findByIsPublicTrueOrderByCreatedAtDesc(Pageable pageable);
     Page<Anchor> findByIsPublicTrueOrderByViewCountDesc(Pageable pageable);
@@ -20,4 +22,7 @@ public interface AnchorRepository extends JpaRepository<Anchor, Long> {
         order by a.viewCount desc, count(al) desc, a.createdAt desc
     """)
     Page<Anchor> findPopularAnchors(Pageable pageable);
+
+    long countByMemberId(Long memberId);
+    List<Anchor> findTop3ByMemberIdOrderByCreatedAtDesc(Long memberId);
 }

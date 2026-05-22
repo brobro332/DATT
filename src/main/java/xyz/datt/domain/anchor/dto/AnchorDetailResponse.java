@@ -27,7 +27,6 @@ public record AnchorDetailResponse(
 
     LocalDateTime createdAt
 ) {
-
     public static AnchorDetailResponse of(
         Anchor anchor,
         int likeCount,

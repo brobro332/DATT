@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import xyz.datt.domain.gamification.policy.LevelPolicy;
 import xyz.datt.global.entity.BaseEntity;
 
 @Getter
@@ -50,9 +51,9 @@ public class Member extends BaseEntity {
     }
 
     public static Member createUser(
-            String email,
-            String password,
-            String nickname
+        String email,
+        String password,
+        String nickname
     ) {
         return new Member(
             email,
@@ -60,5 +61,14 @@ public class Member extends BaseEntity {
             nickname,
             MemberRole.USER
         );
+    }
+
+    public void addExp(int expAmount) {
+        if (expAmount <= 0) {
+            return;
+        }
+
+        this.exp += expAmount;
+        this.level = LevelPolicy.calculateLevel(this.exp);
     }
 }
