@@ -26,7 +26,9 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .env
-/postgres_data/
+**/postgres_data/
+/sql/
+**/generated/**
 
 ### NetBeans ###
 /nbproject/private/
@@ -37,3 +39,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### FAST API ###
+get_place_by_title_and_category.py
+get_place_by_title_and_category_raw.py

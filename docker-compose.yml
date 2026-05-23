@@ -1,13 +1,85 @@
 services:
-  db:
-    image: postgres:15
+  datt-db:
+    image: kartoza/postgis:15-3.3
     container_name: datt-db
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: datt
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASS=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=datt
     ports:
       - "${DB_PORT_IN}:5432"
     volumes:
       - ${DB_VOLUMES}
+    networks:
+      - datt-network
+
+  spring-boot-app:
+    build:
+      context: ./spring-boot-app
+      dockerfile: Dockerfile
+    container_name: spring-boot-app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://datt-db:5432/datt
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - datt-network
+    depends_on:
+      - datt-db
+
+  fast-api-agent:
+    build:
+      context: ./fast-api-agent
+      dockerfile: Dockerfile
+    container_name: fast-api-agent
+    restart: always
+    networks:
+      - datt-network
+
+  next-js-app:
+    build:
+      context: ./next-js-app
+      dockerfile: Dockerfile
+    container_name: next-js-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${DOMAIN_BACKEND}
+    networks:
+      - datt-network
+    depends_on:
+      - spring-boot-app
+
+  nginx:
+    image: nginx:latest
+    profiles: ["prd"]
+    ports:
+      - "${NGINX_PORT_IN}:80"
+      - "${NGINX_PORT_IN_SSL}:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/certbot/www:/var/www/certbot
+      - ./nginx/certbot/conf:/etc/letsencrypt
+    depends_on:
+      - spring-boot-app
+      - next-js-app
+      - fast-api-agent
+    restart: always
+    networks:
+      - datt-network
+
+  certbot:
+    image: certbot/certbot
+    profiles: ["prd"]
+    volumes:
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  datt-network:
+    driver: bridge
