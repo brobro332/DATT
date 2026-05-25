@@ -2,42 +2,60 @@ import { create } from "zustand";
 
 type AuthMember = {
   memberId: number;
-  email: string;
   nickname: string;
 };
 
 type AuthState = {
   accessToken: string | null;
+  refreshToken: string | null;
   member: AuthMember | null;
-
   isLoggedIn: boolean;
 
-  setAuth: (accessToken: string, member?: AuthMember | null) => void;
-  setMember: (member: AuthMember | null) => void;
+  setAuth: (
+    accessToken: string,
+    refreshToken: string,
+    member: AuthMember,
+  ) => void;
+
+  restoreAuth: () => void;
   clearAuth: () => void;
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
   accessToken: null,
+  refreshToken: null,
   member: null,
-
   isLoggedIn: false,
 
-  setAuth: (accessToken, member = null) =>
+  setAuth: (accessToken, refreshToken, member) =>
     set({
       accessToken,
+      refreshToken,
       member,
       isLoggedIn: true,
     }),
 
-  setMember: (member) =>
+  restoreAuth: () => {
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+    const memberJson = localStorage.getItem("member");
+
+    if (!accessToken || !refreshToken || !memberJson) {
+      return;
+    }
+
     set({
-      member,
-    }),
+      accessToken,
+      refreshToken,
+      member: JSON.parse(memberJson) as AuthMember,
+      isLoggedIn: true,
+    });
+  },
 
   clearAuth: () =>
     set({
       accessToken: null,
+      refreshToken: null,
       member: null,
       isLoggedIn: false,
     }),

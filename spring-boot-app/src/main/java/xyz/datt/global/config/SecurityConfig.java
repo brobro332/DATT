@@ -3,6 +3,7 @@ package xyz.datt.global.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -20,10 +21,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
+            .cors(Customizer.withDefaults())
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(Customizer.withDefaults())
             .authorizeHttpRequests(auth ->
-                auth.requestMatchers(
+                auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .requestMatchers(
                         "/api/health",
                         "/api/auth/signup", "/api/auth/login", "/api/auth/reissue", "/api/auth/logout",
                         "/api/place-masters", "/api/batch/place-sync").permitAll()
